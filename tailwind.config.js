@@ -9,10 +9,9 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          // Deep, luxurious theme
           DEFAULT: "#1A1A2E",
           dark: "#0F172A",
-          accent: "#9F7AEA", // classy purple
+          accent: "#9F7AEA",
           gold: "#FBBF24",
         },
       },

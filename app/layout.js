@@ -11,7 +11,6 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="min-h-screen bg-brand-dark text-white">
         <div className="min-h-screen flex flex-col">
-          {/* Simple top bar for branding */}
           <header className="border-b border-white/10 bg-black/40 backdrop-blur-md">
             <div className="mx-auto max-w-md px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -23,7 +22,7 @@ export default function RootLayout({ children }) {
                     We-AR-Menu
                   </p>
                   <p className="text-[11px] text-gray-300">
-                  Experience the serve before the order!
+                    Experience the serve before the order!
                   </p>
                 </div>
               </div>

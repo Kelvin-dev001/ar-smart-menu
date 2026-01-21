@@ -1,0 +1,263 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Script from "next/script";
+import { MENU_ITEMS, MENU_CATEGORIES } from "@/data/menu";
+import { formatPriceKES } from "@/lib/utils";
+import ItemModal from "@/components/ItemModal";
+import FloatingButton from "@/components/FloatingButton";
+import { CartProvider, useCart } from "@/lib/cart-context";
+
+function ARScene() {
+  const [selectedId, setSelectedId] = useState(MENU_ITEMS[0]?.id);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [arReady, setArReady] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { items, addItem, removeItem, clear } = useCart();
+
+  const selectedItem = useMemo(
+    () => MENU_ITEMS.find((m) => m.id === selectedId),
+    [selectedId]
+  );
+
+  // Load <model-viewer> script once
+  useEffect(() => {
+    const existing = document.querySelector(
+      'script[src*="model-viewer.min.js"]'
+    );
+    if (existing) {
+      setArReady(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.type = "module";
+    script.src =
+      "https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js";
+    script.onload = () => setArReady(true);
+    document.head.appendChild(script);
+  }, []);
+
+  const categoryItems = useMemo(() => {
+    const map = {};
+    MENU_CATEGORIES.forEach((cat) => {
+      map[cat] = MENU_ITEMS.filter((i) => i.category === cat);
+    });
+    return map;
+  }, []);
+
+  return (
+    <div className="mx-auto min-h-screen max-w-xl px-4 py-5 space-y-5">
+      <header className="flex items-center justify-between">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.16em] text-gray-400">
+            We-AR-Menu Demo
+          </p>
+          <h1 className="text-2xl font-semibold text-white">
+            View dishes in AR
+          </h1>
+        </div>
+        <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] text-gray-200">
+          WhatsApp orders
+        </span>
+      </header>
+
+      {/* Selected Item + AR Viewer */}
+      <section className="space-y-3 rounded-2xl border border-white/10 bg-black/40 p-4 shadow-soft">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-400">{selectedItem?.category}</p>
+            <h2 className="text-lg font-semibold text-white">
+              {selectedItem?.name}
+            </h2>
+            <p className="text-xs text-gray-300 line-clamp-2">
+              {selectedItem?.description}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-brand-gold">
+              {formatPriceKES(selectedItem?.price || 0)}
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="rounded-full border border-white/10 px-3 py-1 text-xs text-gray-200 hover:border-white/20"
+          >
+            Details
+          </button>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/60">
+          {selectedItem?.modelUrl ? (
+            <model-viewer
+              src={selectedItem.modelUrl}
+              alt={selectedItem.name}
+              ar
+              ar-modes="webxr scene-viewer quick-look"
+              camera-controls
+              autoplay
+              exposure="0.9"
+              shadow-intensity="0.8"
+              style={{ width: "100%", height: "320px", background: "#0F172A" }}
+            >
+              {!arReady && (
+                <div className="flex h-full items-center justify-center text-gray-300">
+                  Loading AR…
+                </div>
+              )}
+            </model-viewer>
+          ) : (
+            <div className="flex h-[320px] items-center justify-center text-sm text-gray-400">
+              No 3D model URL provided.
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => addItem(selectedItem, 1, {})}
+            className="rounded-full bg-gradient-to-r from-brand-accent to-brand-gold px-4 py-2 text-sm font-semibold text-black shadow-soft hover:brightness-110"
+          >
+            Add to cart
+          </button>
+          {!arReady && (
+            <span className="text-[11px] text-amber-200">
+              AR script loading… (Chrome on Android recommended)
+            </span>
+          )}
+        </div>
+      </section>
+
+      {/* Menu Lists by Category */}
+      <section className="space-y-4">
+        {MENU_CATEGORIES.map((cat) => (
+          <div key={cat} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-white">{cat}</p>
+              <span className="text-[11px] text-gray-400">
+                {categoryItems[cat]?.length || 0} items
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {categoryItems[cat]?.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setSelectedId(item.id)}
+                  className={`rounded-xl border px-3 py-3 text-left text-xs transition ${
+                    item.id === selectedId
+                      ? "border-brand-gold bg-brand-gold/10"
+                      : "border-white/10 bg-white/5 hover:border-white/20"
+                  }`}
+                >
+                  <p className="text-[11px] uppercase tracking-[0.12em] text-gray-400">
+                    {item.category}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    {item.name}
+                  </p>
+                  <p className="text-[11px] text-gray-400 line-clamp-2">
+                    {item.description}
+                  </p>
+                  <p className="mt-2 text-[11px] font-semibold text-brand-gold">
+                    {formatPriceKES(item.price)}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* Item Modal */}
+      <ItemModal
+        item={selectedItem}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={addItem}
+      />
+
+      {/* Simple Cart Drawer */}
+      {cartOpen && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-t-2xl bg-brand-dark p-4 shadow-soft">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-white">Cart</p>
+              <button
+                onClick={() => setCartOpen(false)}
+                className="text-xs text-gray-300 hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-3 space-y-3">
+              {items.length === 0 && (
+                <p className="text-xs text-gray-400">Your cart is empty.</p>
+              )}
+              {items.map((it) => (
+                <div
+                  key={it.key}
+                  className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-gray-200"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      {it.name}
+                    </p>
+                    <p className="text-[11px] text-gray-400">
+                      {Object.keys(it.options || {})
+                        .map((k) => `${k}: ${it.options[k]}`)
+                        .join(", ")}
+                    </p>
+                    <p className="mt-1 text-[11px] text-brand-gold">
+                      {formatPriceKES(it.price)} × {it.quantity}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => removeItem(it.key)}
+                    className="rounded-full border border-white/10 px-2 py-1 text-[11px] text-gray-200 hover:border-white/20"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            {items.length > 0 && (
+              <div className="mt-4 flex items-center justify-between">
+                <button
+                  onClick={clear}
+                  className="text-[11px] text-gray-300 hover:text-white"
+                >
+                  Clear cart
+                </button>
+                <button
+                  className="rounded-full bg-gradient-to-r from-brand-accent to-brand-gold px-4 py-2 text-sm font-semibold text-black shadow-soft"
+                  onClick={() =>
+                    alert(
+                      "WhatsApp flow coming in Sprint 3. Cart items: " +
+                        JSON.stringify(items, null, 2)
+                    )
+                  }
+                >
+                  Proceed (stub)
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <FloatingButton count={items.length} onClick={() => setCartOpen(true)} />
+
+      {/* Safety: include Script tag for model-viewer as fallback; already loaded via useEffect */}
+      <Script
+        type="module"
+        src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"
+        strategy="lazyOnload"
+      />
+    </div>
+  );
+}
+
+export default function ARPage() {
+  return (
+    <CartProvider>
+      <ARScene />
+    </CartProvider>
+  );
+}

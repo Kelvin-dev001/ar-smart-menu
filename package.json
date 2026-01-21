@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "health": "node scripts/health-check.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "14.1.0",
@@ -15,10 +14,10 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "10.4.16",
     "eslint": "8.57.0",
     "eslint-config-next": "14.1.0",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.13"
+    "postcss": "8.4.31",
+    "tailwindcss": "3.4.1"
   }
 }

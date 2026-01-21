@@ -1,14 +1,17 @@
 export default function HomePage() {
   return (
-    <div className="flex min-h-[calc(100vh-96px)] items-center justify-center bg-brand-dark text-white">
-      <div className="space-y-3 text-center">
-        <h1 className="text-3xl font-semibold">
+    <main className="flex min-h-screen items-center justify-center">
+      <div className="space-y-4 text-center">
+        <h1 className="text-3xl font-bold">
           We-AR-Menu <span className="text-brand-gold">Demo</span>
         </h1>
-        <p className="text-sm text-gray-300">
+        <p className="text-gray-300">
           If this text is centered and colored, Tailwind is working.
         </p>
+        <button className="rounded-full bg-brand-accent px-4 py-2 text-sm font-semibold text-black">
+          Styled Tailwind Button
+        </button>
       </div>
-    </div>
+    </main>
   );
 }

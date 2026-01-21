@@ -7,12 +7,19 @@ import { formatPriceKES } from "@/lib/utils";
 import ItemModal from "@/components/ItemModal";
 import FloatingButton from "@/components/FloatingButton";
 import { CartProvider, useCart } from "@/lib/cart-context";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
+
+const WHATSAPP_NUMBER = "+254759293030";
+const RESTAURANT_NAME = "We-AR-Menu Demo";
 
 function ARScene() {
   const [selectedId, setSelectedId] = useState(MENU_ITEMS[0]?.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [arReady, setArReady] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [orderType, setOrderType] = useState("Dine-in"); // "Dine-in" | "Takeaway"
+  const [note, setNote] = useState("");
+
   const { items, addItem, removeItem, clear } = useCart();
 
   const selectedItem = useMemo(
@@ -44,6 +51,27 @@ function ARScene() {
     });
     return map;
   }, []);
+
+  const subtotal = useMemo(
+    () =>
+      items.reduce(
+        (sum, it) => sum + (it.price || 0) * (it.quantity || 0),
+        0
+      ),
+    [items]
+  );
+
+  const handleCheckout = () => {
+    if (!items.length) return;
+    const link = buildWhatsAppLink({
+      items,
+      orderType,
+      note,
+      restaurantName: RESTAURANT_NAME,
+      phoneNumber: WHATSAPP_NUMBER,
+    });
+    window.location.href = link;
+  };
 
   return (
     <div className="mx-auto min-h-screen max-w-xl px-4 py-5 space-y-5">
@@ -173,7 +201,7 @@ function ARScene() {
         onAdd={addItem}
       />
 
-      {/* Simple Cart Drawer */}
+      {/* Cart Drawer */}
       {cartOpen && (
         <div className="fixed inset-0 z-50 flex items-end bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-t-2xl bg-brand-dark p-4 shadow-soft">
@@ -217,26 +245,62 @@ function ARScene() {
                 </div>
               ))}
             </div>
+
             {items.length > 0 && (
-              <div className="mt-4 flex items-center justify-between">
-                <button
-                  onClick={clear}
-                  className="text-[11px] text-gray-300 hover:text-white"
-                >
-                  Clear cart
-                </button>
-                <button
-                  className="rounded-full bg-gradient-to-r from-brand-accent to-brand-gold px-4 py-2 text-sm font-semibold text-black shadow-soft"
-                  onClick={() =>
-                    alert(
-                      "WhatsApp flow coming in Sprint 3. Cart items: " +
-                        JSON.stringify(items, null, 2)
-                    )
-                  }
-                >
-                  Proceed (stub)
-                </button>
-              </div>
+              <>
+                <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-gray-200">
+                  {["Dine-in", "Takeaway"].map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setOrderType(type)}
+                      className={`rounded-xl border px-3 py-2 ${
+                        orderType === type
+                          ? "border-brand-gold bg-brand-gold/10 text-brand-gold"
+                          : "border-white/10 bg-white/5 hover:border-white/20"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-3">
+                  <p className="text-[11px] text-gray-400">Notes (optional)</p>
+                  <textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={2}
+                    className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 p-2 text-xs text-gray-100 placeholder:text-gray-500 focus:border-brand-gold focus:outline-none"
+                    placeholder="e.g. Extra chilli, no onions"
+                  />
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-sm text-gray-200">
+                  <p>Subtotal</p>
+                  <p className="font-semibold text-brand-gold">
+                    {formatPriceKES(subtotal)}
+                  </p>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <button
+                    onClick={clear}
+                    className="text-[11px] text-gray-300 hover:text-white"
+                  >
+                    Clear cart
+                  </button>
+                  <button
+                    className="rounded-full bg-gradient-to-r from-brand-accent to-brand-gold px-4 py-2 text-sm font-semibold text-black shadow-soft"
+                    onClick={handleCheckout}
+                  >
+                    Place order via WhatsApp
+                  </button>
+                </div>
+                <p className="mt-2 text-[11px] text-gray-400">
+                  Payment via M-PESA will be completed in WhatsApp with the
+                  cashier.
+                </p>
+              </>
             )}
           </div>
         </div>
@@ -244,7 +308,6 @@ function ARScene() {
 
       <FloatingButton count={items.length} onClick={() => setCartOpen(true)} />
 
-      {/* Safety: include Script tag for model-viewer as fallback; already loaded via useEffect */}
       <Script
         type="module"
         src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"

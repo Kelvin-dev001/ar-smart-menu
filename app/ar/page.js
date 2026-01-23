@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Script from "next/script";
 import { MENU_ITEMS, MENU_CATEGORIES } from "@/data/menu";
 import { formatPriceKES } from "@/lib/utils";
@@ -15,7 +15,6 @@ const RESTAURANT_NAME = "We-AR-Menu Demo";
 function ARScene() {
   const [selectedId, setSelectedId] = useState(MENU_ITEMS[0]?.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [arReady, setArReady] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [orderType, setOrderType] = useState("Dine-in"); // "Dine-in" | "Takeaway"
   const [note, setNote] = useState("");
@@ -26,23 +25,6 @@ function ARScene() {
     () => MENU_ITEMS.find((m) => m.id === selectedId),
     [selectedId]
   );
-
-  // Load <model-viewer> script once
-  useEffect(() => {
-    const existing = document.querySelector(
-      'script[src*="model-viewer.min.js"]'
-    );
-    if (existing) {
-      setArReady(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.type = "module";
-    script.src =
-      "https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js";
-    script.onload = () => setArReady(true);
-    document.head.appendChild(script);
-  }, []);
 
   const categoryItems = useMemo(() => {
     const map = {};
@@ -119,24 +101,26 @@ function ARScene() {
               alt={selectedItem.name}
               ar
               ar-modes="webxr scene-viewer quick-look"
+              ar-scale="fixed"
+              placement="floor"
               camera-controls
+              touch-action="pan-y"
               autoplay
-              exposure="0.9"
-              shadow-intensity="0.8"
+              exposure="1"
+              shadow-intensity="0.9"
               style={{ width: "100%", height: "320px", background: "#0F172A" }}
-            >
-              {!arReady && (
-                <div className="flex h-full items-center justify-center text-gray-300">
-                  Loading AR…
-                </div>
-              )}
-            </model-viewer>
+            ></model-viewer>
           ) : (
             <div className="flex h-[320px] items-center justify-center text-sm text-gray-400">
               No 3D model URL provided.
             </div>
           )}
         </div>
+
+        <p className="mt-1 text-[11px] text-gray-400">
+          Tap the AR icon, move your phone to scan your table, then tap to place
+          the dish on the surface.
+        </p>
 
         <div className="flex items-center justify-between">
           <button
@@ -145,11 +129,6 @@ function ARScene() {
           >
             Add to cart
           </button>
-          {!arReady && (
-            <span className="text-[11px] text-amber-200">
-              AR script loading… (Chrome on Android recommended)
-            </span>
-          )}
         </div>
       </section>
 
@@ -311,7 +290,7 @@ function ARScene() {
       <Script
         type="module"
         src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
     </div>
   );

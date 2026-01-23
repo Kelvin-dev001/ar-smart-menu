@@ -12,16 +12,16 @@ export const MENU_CATEGORIES = [
 export const MENU_ITEMS = [
   {
     id: "burger-signature",
-    name: "Signature Truffle Burger",
+    name: "Signature Cheese Burger",
     description:
       "Juicy beef patty, caramelized onions, truffle aioli, and aged cheddar in a brioche bun.",
     price: 850,
     currency: "KES",
     category: "Burgers",
     imageUrl:
-      "https://res.cloudinary.com/demo/image/upload/v123456/signature-burger.jpg",
+      "https://res.cloudinary.com/dltfgasbb/image/upload/v1769161604/cheese_burger-1_la7mbc.png",
     modelUrl:
-      "https://res.cloudinary.com/demo/image/upload/v123456/signature-burger.glb",
+      "https://res.cloudinary.com/dltfgasbb/image/upload/v1769161427/source_spgubx.glb",
     isAvailable: true,
     options: {
       spiceLevel: ["Mild", "Medium", "Hot"],
@@ -30,7 +30,7 @@ export const MENU_ITEMS = [
   },
   {
     id: "burger-chicken",
-    name: "Grilled Chicken Burger",
+    name: "Grilled Sandwich & Fries",
     description:
       "Marinated chicken breast, avocado, tomato, and herb mayo in a toasted bun.",
     price: 780,
